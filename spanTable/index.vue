@@ -1,0 +1,211 @@
+<template>
+  <div>
+    <el-table
+      v-loading="loading"
+      :data="tableData"
+      :span-method="objectSpanMethod"
+      :header-cell-style="getRowClass"
+      :row-class-name="tableRowClassName"
+      :max-height="maxHeight"
+      :border="border"
+      style="width: 99.9%">
+      <slot name="column"></slot>
+    </el-table>
+  </div>
+</template>
+
+<script>
+export default {
+    name:'VSpanTable',
+    props:{
+        // 表格数据(必填)
+        tableData: {
+            type: Array,
+            required: true
+        },
+        /* 合并的列数据（必填）
+            spanOptions:[{
+                columnIndex:0,
+                value:'scenicSpotId'
+            },{
+                columnIndex:1,
+                value:'ticketProductId'
+            },{
+                columnIndex:5,(要合并的列的index)
+                specialSpan:true,(非必填，如果该值为true，代表在表尾或其他位置含有合并)
+                value:'scenicSpotId'(表尾合并和表头的某列相同)
+            }]
+        */
+        spanOptions: {
+            type: Array,
+            required: true
+        },
+        // 表格最大高度
+        maxHeight: {
+            type: Number,
+            required: false,
+            default: 650
+        },
+        // 是否需要边框
+        border: {
+            type: Boolean,
+            default: true
+        },
+        /* 合并总计合计小计样式
+            tableRowClassObj:{
+                scenicSpotName: '总计',
+                ticketName: '合计'
+            }
+        */
+        tableRowClassObj: {
+            type: Object
+        },
+        // 是否开启手动更新(若要开启手动更新，要在子组件上添加ref获取方法)
+        isUpdate: {
+            type: Boolean,
+            default: true
+        }
+    },
+    data() {
+        return {
+            spanArr:[],
+            loading:false
+        };
+    },
+    created() {
+        this.spanArr =JSON.parse(JSON.stringify(this.spanOptions)).filter(v => !v.specialSpan);
+        // 初始化需要的数组及下标
+        for (let i of this.spanArr){
+            this[`arr${i.value}`] = [];
+            this[`pos${i.value}`] = 0;
+        }
+        this.getListDataForRowAndColumn(this.tableData);
+    },
+    watch:{
+        tableData:{
+            handler(newVal) {
+                this.isUpdate && this.getListDataForRowAndColumn(newVal);
+            },
+            deep:true
+        },
+        spanOptions:{
+            handler(val) {
+                console.log(val);
+                let arr = JSON.parse(JSON.stringify(val)).filter(v => !v.specialSpan);
+                for (let i of arr){
+                    this[`arr${i.value}`] = [];
+                    this[`pos${i.value}`] = 0;
+                }
+                this.getListDataForRowAndColumn(this.tableData);
+            },
+            deep:true
+        }
+    },
+    methods: {
+        getRowClass({rowIndex}) {
+            if (rowIndex === 0) {
+                return {
+                    'background':'#F6F8FC',
+                    'font-size':'1rem',
+                    'font-family':'MicrosoftYaHei',
+                    'font-weight':'400',
+                    'color':'rgba(102,102,102,1)',
+                    'padding':'0.58rem 0'
+                };
+            }
+            return '';
+        },
+        //合计总计样式
+        tableRowClassName({ row }) {
+            if (this.tableRowClassObj){
+                for (let [i,v] of Object.entries(this.tableRowClassObj)){
+                    let count = 0;
+                    if (row[i] === v){
+                        return 'new-table-td-sum';
+                    }
+                    count ++;
+                    if (count > this.tableRowClassObj.length){
+                        return '';
+                    }
+                }
+            }
+        },
+        // 递归判断
+        spanFunc(tableData,i,options){
+            let { value } = options[0];
+            if (tableData[i][value] === tableData[i - 1][value]) {
+                this[`arr${value}`][this[`pos${value}`]] += 1;
+                this[`arr${value}`].push(0);
+                if (options.length > 1){
+                    options.shift();
+                    this.spanFunc(tableData,i,options);
+                }
+            } else {
+                for (let k of options){
+                    this[`arr${k.value}`].push(1);
+                    this[`pos${k.value}`] = i;
+                }
+            }
+        },
+        //合并相同内容
+        getListDataForRowAndColumn(tableData) {
+            let { value:valueFirst } = this.spanArr[0];
+            this.loading = true;
+            for (let i of this.spanArr){
+                this[`arr${i.value}`] = [];
+                this[`pos${i.value}`] = 0;
+            }
+
+            for (let i = 0; i < tableData.length; i++) {
+                if (i === 0) {
+                    // 如果是第一条记录（即索引是0的时候），向数组中加入１
+                    for (let j of this.spanArr){
+                        this[`arr${j.value}`].push(1);
+                        this[`pos${j.value}`] = 0;
+                    }
+                } else if (tableData[i][valueFirst] === tableData[i - 1][valueFirst]) {
+                    this[`arr${valueFirst}`][this[`pos${valueFirst}`]] += 1;
+                    this[`arr${valueFirst}`].push(0);
+                    // 若要合并的列数不止1列
+                    if (this.spanArr && this.spanArr.length > 1){
+                        let arr = JSON.parse(JSON.stringify(this.spanArr));
+                        arr.shift();
+                        this.spanFunc(tableData,i,arr);
+                    }
+                } else {
+                    // 不相等push 1
+                    for (let j of this.spanArr){
+                        this[`arr${j.value}`].push(1);
+                        this[`pos${j.value}`] = i;
+                    }
+                }
+            }
+            setTimeout(() =>{
+                this.loading = false;
+            },0);
+        },
+        objectSpanMethod({ rowIndex, columnIndex }) {
+            for (let i of this.spanOptions){
+                if (columnIndex === Number(i.columnIndex)) {
+                    if (this[`arr${i.value}`][rowIndex]) {
+                        let span = this[`arr${i.value}`][rowIndex];
+                        return {
+                            rowspan: span,
+                            colspan: span > 0 ? 1 : 0
+                        };
+                    }
+                    return {
+                        rowspan: 0,
+                        colspan: 0
+                    };
+                }
+            }
+        }
+    }
+};
+</script>
+<style lang="scss">
+    .el-table .new-table-td-sum {
+        background: #f4f4f4;
+    }
+</style>
