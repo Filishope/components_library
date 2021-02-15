@@ -16,6 +16,7 @@
 
 <script lang="ts">
 import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
+import { ISpanOptions } from '@/api/types';
 @Component({
   name: 'VSpanTable'
 })
@@ -37,9 +38,9 @@ export default class extends Vue{
             value:'scenicSpotId'(表尾合并和表头的某列相同)
         }]
     */
-    @Prop({ required: true }) private spanOptions!: any[]
+    @Prop({ required: true }) private spanOptions!: ISpanOptions[]
     // 表格最大高度
-    @Prop({ default: 650, required: false }) private width!: number
+    @Prop({ default: 650, required: false }) private maxHeight!: number
     // 是否需要边框
     @Prop({ default: true }) private border!: boolean
     /* 合并总计合计小计样式
@@ -55,31 +56,32 @@ export default class extends Vue{
 
     @Watch('tableData', { deep: true })
     private onTableDataChange(newVal: any[]) {
+        console.log(newVal);
         this.isUpdate && this.getListDataForRowAndColumn(newVal);
     }
 
     @Watch('spanOptions', { deep: true })
     private onSpanOptionsChange(val: any[]) {
         console.log(val);
-        let arr = JSON.parse(JSON.stringify(val)).filter(v => !v.specialSpan);
+        let arr = JSON.parse(JSON.stringify(val)).filter((v:ISpanOptions) => !v.specialSpan);
         for (let i of arr) {
-            this[`arr${i.value}`] = [];
-            this[`pos${i.value}`] = 0;
-        }
-        this.getListDataForRowAndColumn(this.tableData);
-    }
-    
-    created() {
-        this.spanArr = JSON.parse(JSON.stringify(this.spanOptions)).filter(v => !v.specialSpan);
-        // 初始化需要的数组及下标
-        for (let i of this.spanArr) {
-            this[`arr${i.value}`] = [];
-            this[`pos${i.value}`] = 0;
+            (this as any)[`arr${i.value}`] = [];
+            (this as any)[`pos${i.value}`] = 0;
         }
         this.getListDataForRowAndColumn(this.tableData);
     }
 
-    getRowClass({ rowIndex }) {
+    created() {
+        this.spanArr = JSON.parse(JSON.stringify(this.spanOptions)).filter((v:ISpanOptions) => !v.specialSpan);
+        // 初始化需要的数组及下标
+        for (let i of this.spanArr) {
+            (this as any)[`arr${i.value}`] = [];
+            (this as any)[`pos${i.value}`] = 0;
+        }
+        this.getListDataForRowAndColumn(this.tableData);
+    }
+
+    getRowClass({ rowIndex }:{rowIndex: number}) {
         if (rowIndex === 0) {
             return {
                 'background': '#F6F8FC',
@@ -94,7 +96,7 @@ export default class extends Vue{
     }
 
     // 合计总计样式
-    tableRowClassName({ row }) {
+    tableRowClassName({ row }: {row: any}) {
         if (this.tableRowClassObj) {
             for (let [i, v] of Object.entries(this.tableRowClassObj)) {
                 let count = 0;
@@ -102,7 +104,7 @@ export default class extends Vue{
                     return 'new-table-td-sum';
                 }
                 count++;
-                if (count > this.tableRowClassObj.length) {
+                if (count > Object.entries(this.tableRowClassObj).length) {
                     return '';
                 }
             }
@@ -110,42 +112,42 @@ export default class extends Vue{
     }
 
     // 递归判断
-    spanFunc(tableData, i, options) {
+    spanFunc(tableData:any[], i:number, options: any[]) {
         let { value } = options[0];
         if (tableData[i][value] === tableData[i - 1][value]) {
-            this[`arr${value}`][this[`pos${value}`]] += 1;
-            this[`arr${value}`].push(0);
+            (this as any)[`arr${value}`][(this as any)[`pos${value}`]] += 1;
+            (this as any)[`arr${value}`].push(0);
             if (options.length > 1) {
                 options.shift();
                 this.spanFunc(tableData, i, options);
             }
         } else {
             for (let k of options) {
-                this[`arr${k.value}`].push(1);
-                this[`pos${k.value}`] = i;
+                (this as any)[`arr${k.value}`].push(1);
+                (this as any)[`pos${k.value}`] = i;
             }
         }
     }
 
     // 合并相同内容
-    getListDataForRowAndColumn(tableData) {
+    getListDataForRowAndColumn(tableData:any[]) {
         let { value: valueFirst } = this.spanArr[0];
         this.loading = true;
         for (let i of this.spanArr) {
-            this[`arr${i.value}`] = [];
-            this[`pos${i.value}`] = 0;
+            (this as any)[`arr${i.value}`] = [];
+            (this as any)[`pos${i.value}`] = 0;
         }
 
         for (let i = 0; i < tableData.length; i++) {
             if (i === 0) {
                 // 如果是第一条记录（即索引是0的时候），向数组中加入１
                 for (let j of this.spanArr) {
-                    this[`arr${j.value}`].push(1);
-                    this[`pos${j.value}`] = 0;
+                    (this as any)[`arr${j.value}`].push(1);
+                    (this as any)[`pos${j.value}`] = 0;
                 }
             } else if (tableData[i][valueFirst] === tableData[i - 1][valueFirst]) {
-                this[`arr${valueFirst}`][this[`pos${valueFirst}`]] += 1;
-                this[`arr${valueFirst}`].push(0);
+                (this as any)[`arr${valueFirst}`][(this as any)[`pos${valueFirst}`]] += 1;
+                (this as any)[`arr${valueFirst}`].push(0);
                 // 若要合并的列数不止1列
                 if (this.spanArr && this.spanArr.length > 1) {
                     let arr = JSON.parse(JSON.stringify(this.spanArr));
@@ -155,8 +157,8 @@ export default class extends Vue{
             } else {
                 // 不相等push 1
                 for (let j of this.spanArr) {
-                    this[`arr${j.value}`].push(1);
-                    this[`pos${j.value}`] = i;
+                    (this as any)[`arr${j.value}`].push(1);
+                    (this as any)[`pos${j.value}`] = i;
                 }
             }
         }
@@ -165,29 +167,28 @@ export default class extends Vue{
         }, 0);
     }
 
-    objectSpanMethod({ rowIndex, columnIndex }) {
+    objectSpanMethod({ rowIndex, columnIndex }:{rowIndex:number, columnIndex:number}) {
         for (let i of this.spanOptions) {
             if (columnIndex === Number(i.columnIndex)) {
-                if (this[`arr${i.value}`][rowIndex]) {
-                    let span = this[`arr${i.value}`][rowIndex];
+                if ((this as any)[`arr${i.value}`][rowIndex]) {
+                    let span = (this as any)[`arr${i.value}`][rowIndex];
                     return {
                         rowspan: span,
                         colspan: span > 0 ? 1 : 0
                     };
                 }
-                return {
+                return { 
                     rowspan: 0,
                     colspan: 0
                 };
             }
         }
     }
-
 }
 </script>
 <style lang="scss">
     .el-table .new-table-td-sum {
-        background: #f4f4f4;
+        background: #f4f4f4; 
     }
 </style>
 

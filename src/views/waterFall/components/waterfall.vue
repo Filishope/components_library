@@ -14,70 +14,65 @@
   </div>
 </template>
 
-<script>
-export default {
-  props: {
-    columns: Array,
-    cols: Number
-  },
-  data() {
-    return {
-      dataObj: {},
-      picLens: 0
-    };
-  },
-
-  created() {
-    this.picLens = this.columns.length;
-    for (let i = 1; i <= this.cols; i++) {
-      this.$set(this.dataObj, `column${i}`, []);
-      this.$set(this.dataObj, `columnHeight${i}`, 0);
-    }
-  },
-  mounted() {
-    this.columns.forEach((item, i) => {
-      if (i < this.cols) {
-        this.dataObj[`column${i + 1}`].push(item);
+<script lang="ts">
+import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
+@Component({
+  name: 'waterfall'
+})
+export default class extends Vue{
+    private dataObj: object = [];
+    private loading: boolean = false;
+    private picLens: number = 0;
+    @Prop() private columns!: any[]
+    @Prop() private cols!: number
+    created() {
+      this.picLens = this.columns.length;
+      for (let i = 1; i <= this.cols; i++) {
+        this.$set(this.dataObj, `column${i}`, []);
+        this.$set(this.dataObj, `columnHeight${i}`, 0);
       }
-    });
-
-    for (let i = 1; i <= this.cols; i++) {
-      this.columns.shift();
     }
-    setTimeout(() => {
-      this.calcuateHeight();
-    }, 1000);
-  },
-  methods: {
+    mounted() {
+      this.columns.forEach((item, i) => {
+        if (i < this.cols) {
+          (this as any).dataObj[`column${i + 1}`].push(item);
+        }
+      });
+
+      for (let i = 1; i <= this.cols; i++) {
+        this.columns.shift();
+      }
+      setTimeout(() => {
+        this.calcuateHeight();
+      }, 1000);
+    }
     // 这里是关键、要保证图片onload之后去计算高度
-    loadImage(e) {
+    loadImage(e:any) {
       if (this.columns.length > 0 && this.columns.length < this.picLens - this.cols) {
         this.calcuateHeight();
       }
-    },
+    }
     calcuateHeight() {
         this.$nextTick(() => {
           for (let i = 0; i < this.cols; i++) {
-            this.dataObj[`columnHeight${i + 1}`] = this.$refs['column-item'][i].offsetHeight;
+            (this as any).dataObj[`columnHeight${i + 1}`] = (this as any).$refs['column-item'][i].offsetHeight;
           }
           this.assignData();
         });
-    },
+    }
     assignData() {
       let heightList = [];
       let minIndex = 0;
-      let minHeight = null;
+      let minHeight:number = 0;
       for (let i = 0; i < this.cols; i++) {
-        heightList.push(this.dataObj[`columnHeight${i + 1}`]);
+        heightList.push((this as any).dataObj[`columnHeight${i + 1}`]);
       }
       minHeight = Math.min(...heightList);
       minIndex = heightList.findIndex(v => v === minHeight);
-      this.dataObj[`column${minIndex + 1}`].push(this.columns[0]);
+      (this as any).dataObj[`column${minIndex + 1}`].push(this.columns[0]);
       this.columns.shift();
     }
-  }
-};
-
+}
 </script>
 <style scoped>
 .box{

@@ -13,12 +13,12 @@ const routes: RouteConfig[] = [
   {
     path: '/spanTable',
     name: 'spanTable',
-    component: () => import('../views/spanTable')
+    component: () => import('../views/spanTable/index.vue')
   },
   {
     path: '/waterFall',
     name: 'waterFall',
-    component: () => import('../views/waterFall')
+    component: () => import('../views/waterFall/index.vue')
   }
 ];
 

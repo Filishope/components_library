@@ -13,7 +13,7 @@
 </template>
 
 <script lang="ts">
-import VSpanTable from './components/spantable';
+import VSpanTable from './components/spantable.vue';
 import { Component, Vue } from 'vue-property-decorator';
 import { ItimeInterrval } from '@/api/types';
 @Component({

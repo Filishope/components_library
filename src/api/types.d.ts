@@ -6,3 +6,8 @@ export interface ItimeInterrval {
     price: number
     createTime: string
 }
+export interface ISpanOptions {
+    value: string
+    columnIndex: number
+    specialSpan?: boolean
+}
