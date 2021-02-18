@@ -69,7 +69,7 @@ export default class extends Vue{
         this.getListDataForRowAndColumn(this.tableData);
     }
 
-    created() {
+    private created() {
         this.spanArr = JSON.parse(JSON.stringify(this.spanOptions)).filter((v:ISpanOptions) => !v.specialSpan);
         // 初始化需要的数组及下标
         for (let i of this.spanArr) {
@@ -79,7 +79,7 @@ export default class extends Vue{
         this.getListDataForRowAndColumn(this.tableData);
     }
 
-    getRowClass({ rowIndex }:{rowIndex: number}) {
+    private getRowClass({ rowIndex }:{rowIndex: number}) {
         if (rowIndex === 0) {
             return {
                 'background': '#F6F8FC',
@@ -94,7 +94,7 @@ export default class extends Vue{
     }
 
     // 合计总计样式
-    tableRowClassName({ row }: {row: any}) {
+    private tableRowClassName({ row }: {row: any}) {
         if (this.tableRowClassObj) {
             for (let [i, v] of Object.entries(this.tableRowClassObj)) {
                 let count = 0;
@@ -110,7 +110,7 @@ export default class extends Vue{
     }
 
     // 递归判断
-    spanFunc(tableData:any[], i:number, options: any[]) {
+    private spanFunc(tableData:any[], i:number, options: any[]) {
         let { value } = options[0];
         if (tableData[i][value] === tableData[i - 1][value]) {
             (this as any)[`arr${value}`][(this as any)[`pos${value}`]] += 1;
@@ -128,7 +128,7 @@ export default class extends Vue{
     }
 
     // 合并相同内容
-    getListDataForRowAndColumn(tableData:any[]) {
+    private getListDataForRowAndColumn(tableData:any[]) {
         console.log(this.spanArr)
         let { value: valueFirst } = this.spanArr[0];
         this.loading = true;
@@ -166,7 +166,7 @@ export default class extends Vue{
         }, 0);
     }
 
-    objectSpanMethod({ rowIndex, columnIndex }:{rowIndex:number, columnIndex:number}) {
+    private objectSpanMethod({ rowIndex, columnIndex }:{rowIndex:number, columnIndex:number}) {
         for (let i of this.spanOptions) {
             if (columnIndex === Number(i.columnIndex)) {
                 if ((this as any)[`arr${i.value}`][rowIndex]) {

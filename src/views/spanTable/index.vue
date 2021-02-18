@@ -32,7 +32,7 @@ export default class extends Vue {
                 value: 'areaName'
             }];
     private tableRowClassObj = { price: '总计' };
-    mounted() {
+    private mounted() {
         this.timeIntervalList = [
             { timeSection: '时段1', areaName: '区域1', name: 'aaa', price: 1, createTime: '2020-10-1' },
             { timeSection: '时段1', areaName: '区域1', name: 'bbb', price: 3, createTime: '2020-10-2' },

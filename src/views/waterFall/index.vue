@@ -16,8 +16,7 @@ import Waterfall from './components/waterfall.vue';
 export default class extends Vue{
   private columns: any[] = []
   private cols:number = 4
-
-  created() {
+  private created() {
     for (let i = 0; i < 17; i++) {
       this.columns.push({ url: require(`../../assets/img/${i + 1}.jpg`) });
     }

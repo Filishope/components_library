@@ -25,14 +25,14 @@ export default class extends Vue{
     private picLens: number = 0;
     @Prop() private columns!: any[]
     @Prop() private cols!: number
-    created() {
+    private created() {
       this.picLens = this.columns.length;
       for (let i = 1; i <= this.cols; i++) {
         this.$set(this.dataObj, `column${i}`, []);
         this.$set(this.dataObj, `columnHeight${i}`, 0);
       }
     }
-    mounted() {
+    private mounted() {
       this.columns.forEach((item, i) => {
         if (i < this.cols) {
           (this as any).dataObj[`column${i + 1}`].push(item);
@@ -47,12 +47,12 @@ export default class extends Vue{
       }, 1000);
     }
     // 这里是关键、要保证图片onload之后去计算高度
-    loadImage(e:any) {
+    private loadImage(e:any) {
       if (this.columns.length > 0 && this.columns.length < this.picLens - this.cols) {
         this.calcuateHeight();
       }
     }
-    calcuateHeight() {
+    private calcuateHeight() {
         this.$nextTick(() => {
           for (let i = 0; i < this.cols; i++) {
             (this as any).dataObj[`columnHeight${i + 1}`] = (this as any).$refs['column-item'][i].offsetHeight;
@@ -60,7 +60,7 @@ export default class extends Vue{
           this.assignData();
         });
     }
-    assignData() {
+    private assignData() {
       let heightList = [];
       let minIndex = 0;
       let minHeight:number = 0;
