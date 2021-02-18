@@ -49,7 +49,7 @@ export default class extends Vue{
             ticketName: '合计'
         }
     */
-    @Prop() private tableRowClassObj!: object
+    @Prop() private tableRowClassObj?: object
     // 是否开启手动更新(若要开启手动更新，要在子组件上添加ref获取方法)
     @Prop({ default: true }) private isUpdate!: boolean
 
