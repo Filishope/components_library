@@ -56,13 +56,11 @@ export default class extends Vue{
 
     @Watch('tableData', { deep: true })
     private onTableDataChange(newVal: any[]) {
-        console.log(newVal);
         this.isUpdate && this.getListDataForRowAndColumn(newVal);
     }
 
     @Watch('spanOptions', { deep: true })
     private onSpanOptionsChange(val: any[]) {
-        console.log(val);
         let arr = JSON.parse(JSON.stringify(val)).filter((v:ISpanOptions) => !v.specialSpan);
         for (let i of arr) {
             (this as any)[`arr${i.value}`] = [];
@@ -131,6 +129,7 @@ export default class extends Vue{
 
     // 合并相同内容
     getListDataForRowAndColumn(tableData:any[]) {
+        console.log(this.spanArr)
         let { value: valueFirst } = this.spanArr[0];
         this.loading = true;
         for (let i of this.spanArr) {

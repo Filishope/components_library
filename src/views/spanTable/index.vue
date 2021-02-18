@@ -1,6 +1,6 @@
 <template>
     <div class="flex-content">
-        <v-span-table style="width:70%" isUpdate :tableRowClassObj="tableRowClassObj" :tableData="timeIntervalList" :spanOptions="spanOptions" ref="spanTable">
+        <v-span-table style="width:70%" :tableRowClassObj="tableRowClassObj" :tableData="timeIntervalList" :spanOptions="spanOptions" ref="spanTable">
             <template #column>
                 <el-table-column prop="timeSection" label="时段" align="center"></el-table-column>
                 <el-table-column prop="areaName" label="区域" align="center"></el-table-column>
